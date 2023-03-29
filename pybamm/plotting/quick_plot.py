@@ -496,7 +496,7 @@ class QuickPlot(object):
                             linestyle = self.linestyles[j]
                         full_t = self.ts_seconds[i]
                         
-                        if experiment is None:
+                        if self.experiment_data is None:
                             (self.plots[key][i][j],) = ax.plot(
                             full_t / self.time_scaling_factor,
                             variable(full_t, warn=False),
@@ -549,7 +549,7 @@ class QuickPlot(object):
                             # variables (color differentiates models)
                             linestyle = self.linestyles[j]
                             
-                        if experiment_data=None:
+                        if experiment_data == None:
                             
                             (self.plots[key][i][j],) = ax.plot(
                                 self.first_spatial_variable[key],
@@ -565,7 +565,7 @@ class QuickPlot(object):
                                 variable(t_in_seconds, **spatial_vars, warn=False),
                                 color=self.colors[i],
                                 linestyle=linestyle,
-                                label="experiment"
+                                label="experiment",
                                 zorder=10,
                             )
                             (self.plots[key][i][j],) = ax.plot(
@@ -573,7 +573,7 @@ class QuickPlot(object):
                                 variable(t_in_seconds, **spatial_vars, warn=False),
                                 color=self.colors[i],
                                 linestyle=linestyle,
-                                label="simulation"
+                                label="simulation",
                                 zorder=10,
                             )
                         variable_handles.append(self.plots[key][0][j])
@@ -819,3 +819,5 @@ class QuickPlot(object):
         # remove the generated images
         for image in images:
             os.remove(image)
+
+
