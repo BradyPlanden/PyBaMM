@@ -93,6 +93,7 @@ class QuickPlot(object):
     def __init__(
         self,
         solutions,
+        experiment_data=None,
         output_variables=None,
         labels=None,
         colors=None,
@@ -103,6 +104,7 @@ class QuickPlot(object):
         spatial_unit="um",
         variable_limits="fixed",
     ):
+        self.experiment_data=experiment_data
         input_solutions = solutions
         solutions = []
         if not isinstance(input_solutions, (pybamm.Solution, pybamm.Simulation, list)):
@@ -493,12 +495,29 @@ class QuickPlot(object):
                             # variables (color differentiates models)
                             linestyle = self.linestyles[j]
                         full_t = self.ts_seconds[i]
-                        (self.plots[key][i][j],) = ax.plot(
+                        
+                        if experiment=None:
+                            (self.plots[key][i][j],) = ax.plot(
                             full_t / self.time_scaling_factor,
                             variable(full_t, warn=False),
                             color=self.colors[i],
                             linestyle=linestyle,
                         )
+                        else:
+                            (self.plots[key][i][j],) = ax.plot(
+                                full_t / self.time_scaling_factor,
+                                variable(full_t, warn=False),
+                                color=self.colors[i],
+                                label="experiment",
+                                linestyle=linestyle,
+                            )
+                            (self.plots[key][i][j],) = ax.plot(
+                                full_t / self.time_scaling_factor,
+                                variable(full_t, warn=False),
+                                color=self.colors[i],
+                                label="simulation",
+                                linestyle=linestyle,
+                            )
                         variable_handles.append(self.plots[key][0][j])
                     solution_handles.append(self.plots[key][i][0])
                 y_min, y_max = ax.get_ylim()
@@ -529,13 +548,34 @@ class QuickPlot(object):
                             # multiple variables -> use linestyle to differentiate
                             # variables (color differentiates models)
                             linestyle = self.linestyles[j]
-                        (self.plots[key][i][j],) = ax.plot(
-                            self.first_spatial_variable[key],
-                            variable(t_in_seconds, **spatial_vars, warn=False),
-                            color=self.colors[i],
-                            linestyle=linestyle,
-                            zorder=10,
-                        )
+                            
+                        if experiment_data=None:
+                            
+                            (self.plots[key][i][j],) = ax.plot(
+                                self.first_spatial_variable[key],
+                                variable(t_in_seconds, **spatial_vars, warn=False),
+                                color=self.colors[i],
+                                linestyle=linestyle,
+                                zorder=10,
+                            )
+                            
+                        else:
+                            (self.plots[key][i][j],) = ax.plot(
+                                self.first_spatial_variable[key],
+                                variable(t_in_seconds, **spatial_vars, warn=False),
+                                color=self.colors[i],
+                                linestyle=linestyle,
+                                label="experiment"
+                                zorder=10,
+                            )
+                            (self.plots[key][i][j],) = ax.plot(
+                                self.first_spatial_variable[key],
+                                variable(t_in_seconds, **spatial_vars, warn=False),
+                                color=self.colors[i],
+                                linestyle=linestyle,
+                                label="simulation"
+                                zorder=10,
+                            )
                         variable_handles.append(self.plots[key][0][j])
                     solution_handles.append(self.plots[key][i][0])
                 # add lines for boundaries between subdomains
