@@ -496,7 +496,7 @@ class QuickPlot(object):
                             linestyle = self.linestyles[j]
                         full_t = self.ts_seconds[i]
                         
-                        if experiment=None:
+                        if experiment is None:
                             (self.plots[key][i][j],) = ax.plot(
                             full_t / self.time_scaling_factor,
                             variable(full_t, warn=False),
