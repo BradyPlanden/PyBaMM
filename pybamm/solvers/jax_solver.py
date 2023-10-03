@@ -43,6 +43,9 @@ class JaxSolver(pybamm.BaseSolver):
         The absolute tolerance for the solver (default is 1e-6).
     extrap_tol : float, optional
         The tolerance to assert whether extrapolation occurs or not (default is 0).
+    output_variables : list[str], optional
+        List of variables to calculate and return. If none are specified then
+        the complete state vector is returned (can be very large) (default is [])
     extra_options : dict, optional
         Any options to pass to the solver.
         Please consult `JAX documentation
@@ -57,6 +60,7 @@ class JaxSolver(pybamm.BaseSolver):
         rtol=1e-6,
         atol=1e-6,
         extrap_tol=None,
+        output_variables=[],
         extra_options=None,
     ):
         if not pybamm.have_jax():
@@ -67,7 +71,12 @@ class JaxSolver(pybamm.BaseSolver):
         # note: bdf solver itself calculates consistent initial conditions so can set
         # root_method to none, allow user to override this behavior
         super().__init__(
-            method, rtol, atol, root_method=root_method, extrap_tol=extrap_tol
+            method,
+            rtol,
+            atol,
+            root_method,
+            extrap_tol,
+            output_variables,
         )
         method_options = ["RK45", "BDF"]
         if method not in method_options:
@@ -78,6 +87,7 @@ class JaxSolver(pybamm.BaseSolver):
         self.extra_options = extra_options or {}
         self.name = "JAX solver ({})".format(method)
         self._cached_solves = dict()
+        self.output_variables = output_variables
         pybamm.citations.register("jax2018")
 
     def get_solve(self, model, t_eval):
@@ -284,25 +294,55 @@ class JaxSolver(pybamm.BaseSolver):
         # convert to a normal numpy array
         y = onp.array(y)
 
-        termination = "final time"
-        t_event = None
-        y_event = onp.array(None)
+        number_of_timesteps = t_eval.size
+        number_of_states = model.y0.size
+        if self.output_variables:
+            # Substitute empty vectors for state vector 'y'
+            y_out = onp.zeros((number_of_timesteps * number_of_states, 0))
 
-        # Extract solutions from y with their associated input dicts
-        solutions = []
-        for k, inputs_dict in enumerate(inputs):
-            sol = pybamm.Solution(
-                t_eval,
-                jnp.reshape(y[k,], y.shape[1:]),
-                model,
-                inputs_dict,
-                t_event,
-                y_event,
-                termination,
-            )
-            sol.integration_time = integration_time
-            solutions.append(sol)
+        sol = pybamm.Solution(
+            t_eval,
+            y_out,
+            model,
+            inputs,
+            onp.array([t_eval[-1]]),
+            onp.transpose(y_out[-1])[:, onp.newaxis],
+            #termination,
+            sensitivities=[],  # Update based on Jax sensitivities
+        )
 
-        if len(solutions) == 1:
-            return solutions[0]
-        return solutions
+        if self.output_variables:
+            num_samples = sol.y.shape[0] // number_of_timesteps
+            sol.y = sol.y.reshape((number_of_timesteps, num_samples))
+            var = []
+
+            # Add logic to append solution object
+            sol._variables[
+                var
+            ] = (
+                pybamm.ProcessedVariabledJax()
+            )  # Class to take sol/model variable and return output variable
+
+        if inputs:
+            termination = "final time"
+            t_event = None
+            y_event = onp.array(None)
+
+            # Extract solutions from y with their associated input dicts
+            solutions = []
+            for k, inputs_dict in enumerate(inputs):
+                sol = pybamm.Solution(
+                    t_eval,
+                    jnp.reshape(y[k,], y.shape[1:]),
+                    model,
+                    inputs_dict,
+                    t_event,
+                    y_event,
+                    termination,
+                )
+                sol.integration_time = integration_time
+                solutions.append(sol)
+
+            if len(solutions) == 1:
+                return solutions[0]
+            return solutions
