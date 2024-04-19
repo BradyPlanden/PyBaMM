@@ -94,6 +94,8 @@ if pybamm.have_idaklu():
             t_eval,
         )
         f = ida_jax_solver.get_jaxpr()
+    else:
+        ida_jax_solver = None
 
 
 # Add the Casadi solvers
@@ -196,6 +198,12 @@ if pybamm.have_jax() and use_jax:
 model = build_model()
 casadi_solver_fast_with_events = pybamm.CasadiSolver(
     mode="fast with events",
+    rtol=1e-6,
+    atol=1e-6,
+)
+
+# Create the IDAKLU Solver object
+idaklu_solver = pybamm.IDAKLUSolver(
     rtol=1e-6,
     atol=1e-6,
 )
