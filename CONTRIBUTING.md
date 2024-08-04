@@ -44,9 +44,12 @@ You now have everything you need to start making changes!
 
 ### B. Writing your code
 
-6. PyBaMM is developed in [Python](https://en.wikipedia.org/wiki/Python_(programming_language)), and makes heavy use of [NumPy](https://en.wikipedia.org/wiki/NumPy) (see also [NumPy for MatLab users](https://numpy.org/doc/stable/user/numpy-for-matlab-users.html) and [Python for R users](https://www.rebeccabarter.com/blog/2023-09-11-from_r_to_python)).
+6. PyBaMM is developed in [Python](https://www.python.org)), and makes heavy use of [NumPy](https://numpy.org/) (see also [NumPy for MatLab users](https://numpy.org/doc/stable/user/numpy-for-matlab-users.html) and [Python for R users](https://www.rebeccabarter.com/blog/2023-09-11-from_r_to_python)).
 7. Make sure to follow our [coding style guidelines](#coding-style-guidelines).
-8. Commit your changes to your branch with [useful, descriptive commit messages](https://chris.beams.io/posts/git-commit/): Remember these are publicly visible and should still make sense a few months ahead in time. While developing, you can keep using the GitHub issue you're working on as a place for discussion. [Refer to your commits](https://stackoverflow.com/questions/8910271/how-can-i-reference-a-commit-in-an-issue-comment-on-github) when discussing specific lines of code.
+8. Commit your changes to your branch with [useful, descriptive commit messages](https://chris.beams.io/posts/git-commit/): Remember these are
+   publicly visible and should still make sense a few months ahead in time.
+   While developing, you can keep using the GitHub issue you're working on
+   as a place for discussion.
 9. If you want to add a dependency on another library, or re-use code you found somewhere else, have a look at [these guidelines](#dependencies-and-reusing-code).
 
 ### C. Merging your changes with PyBaMM
@@ -87,7 +90,12 @@ Class names are CamelCase, and start with an upper case letter, for example `MyO
 While it's a bad idea for developers to "reinvent the wheel", it's important for users to get a _reasonably sized download and an easy install_. In addition, external libraries can sometimes cease to be supported, and when they contain bugs it might take a while before fixes become available as automatic downloads to PyBaMM users.
 For these reasons, all dependencies in PyBaMM should be thought about carefully, and discussed on GitHub.
 
-Direct inclusion of code from other packages is possible, as long as their license permits it and is compatible with ours, but again should be considered carefully and discussed in the group. Snippets from blogs and [stackoverflow](https://stackoverflow.com/) can often be included without attribution, but if they solve a particularly nasty problem (or are very hard to read) it's often a good idea to attribute (and document) them, by making a comment with a link in the source code.
+Direct inclusion of code from other packages is possible, as long as their
+license permits it and is compatible with ours, but again should be
+considered carefully and discussed in the group. Snippets from blogs and
+stackoverflow can often be included without attribution, but if they solve a
+particularly nasty problem (or are very hard to read) it's often a good idea to
+attribute (and document) them, by making a comment with a link in the source code.
 
 ### Separating dependencies
 
@@ -141,9 +149,13 @@ The `test_optional_dependencies` function extracts `pybamm` mandatory distributi
 
 ## Testing
 
-All code requires testing. We use the [unittest](https://docs.python.org/3.3/library/unittest.html) package for our tests. (These tests typically just check that the code runs without error, and so, are more _debugging_ than _testing_ in a strict sense. Nevertheless, they are very useful to have!)
+All code requires testing. We use the [pytest](https://docs.pytest.org/en/stable/) package for our tests. (These tests typically just check that the code runs without error, and so, are more _debugging_ than _testing_ in a strict sense. Nevertheless, they are very useful to have!)
 
-We also use [pytest](https://docs.pytest.org/en/latest/) along with the [nbmake](https://github.com/treebeardtech/nbmake) and the [pytest-xdist](https://pypi.org/project/pytest-xdist/) plugins to test the example notebooks.
+We use following plugins for various needs:
+
+[nbmake](https://github.com/treebeardtech/nbmake/) : plugins to test the example notebooks.
+
+[pytest-xdist](https://pypi.org/project/pytest-xdist/) : plugins to run tests in parallel.
 
 If you have `nox` installed, to run unit tests, type
 
@@ -154,14 +166,14 @@ nox -s unit
 else, type
 
 ```bash
-python run-tests.py --unit
+pytest -m unit
 ```
 
 ### Writing tests
 
 Every new feature should have its own test. To create ones, have a look at the `test` directory and see if there's a test for a similar method. Copy-pasting this is a good way to start.
 
-Next, add some simple (and speedy!) tests of your main features. If these run without exceptions that's a good start! Next, check the output of your methods using any of these [assert methods](https://docs.python.org/3.3/library/unittest.html#assert-methods).
+Next, add some simple (and speedy!) tests of your main features. If these run without exceptions that's a good start! Next, check the output of your methods using [assert statements](https://docs.pytest.org/en/7.1.x/how-to/assert.html).
 
 ### Running more tests
 
@@ -185,7 +197,7 @@ nox -s examples
 Alternatively, you may use `pytest` directly with the `--nbmake` flag:
 
 ```bash
-pytest --nbmake
+pytest --nbmake docs/source/examples/
 ```
 
 which runs all the notebooks in the `docs/source/examples/notebooks/` folder in parallel by default, using the `pytest-xdist` plugin.
@@ -237,19 +249,19 @@ This also means that, if you can't fix the bug yourself, it will be much easier 
 1. Run individual test scripts instead of the whole test suite:
 
    ```bash
-   python tests/unit/path/to/test
+   pytest tests/unit/path/to/test
    ```
 
    You can also run an individual test from a particular script, e.g.
 
    ```bash
-   python tests/unit/test_quick_plot.py TestQuickPlot.test_failure
+   pytest tests/unit/test_plotting/test_quick_plot.py::TestQuickPlot::test_simple_ode_model
    ```
 
    If you want to run several, but not all, the tests from a script, you can restrict which tests are run from a particular script by using the skipping decorator:
 
    ```python
-   @unittest.skip("")
+   @pytest.mark.skip("")
    def test_bit_of_code(self):
        ...
    ```

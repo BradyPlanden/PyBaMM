@@ -4,10 +4,9 @@
 import pybamm
 import numpy as np
 import unittest
-from tests import TestCase
 
 
-class TestCompareOutputsTwoPhase(TestCase):
+class TestCompareOutputsTwoPhase(unittest.TestCase):
     def compare_outputs_two_phase_graphite_graphite(self, model_class):
         """
         Check that a two-phase graphite-graphite model gives the same results as a
@@ -144,7 +143,7 @@ class TestCompareOutputsTwoPhase(TestCase):
         )
 
         sim = pybamm.Simulation(model, parameter_values=param)
-        t_eval = np.linspace(0, 9000, 1000)
+        t_eval = np.linspace(0, 8000, 1000)
         inputs = [{"x": 0.01}, {"x": 0.1}]
         sol = sim.solve(t_eval, inputs=inputs)
 

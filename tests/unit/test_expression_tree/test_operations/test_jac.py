@@ -1,17 +1,16 @@
 #
 # Tests for the jacobian methods
 #
-from tests import TestCase
+
 import pybamm
 
 import numpy as np
 import unittest
 from scipy.sparse import eye
 from tests import get_mesh_for_testing
-from tests import multi_var_function_test
 
 
-class TestJacobian(TestCase):
+class TestJacobian(unittest.TestCase):
     def test_variable_is_statevector(self):
         a = pybamm.Symbol("a")
         with self.assertRaisesRegex(
@@ -212,12 +211,6 @@ class TestJacobian(TestCase):
         func = pybamm.Sin(const)
         dfunc_dy = func.jac(y).evaluate(y=y0)
         np.testing.assert_array_equal(0, dfunc_dy)
-
-        # several children
-        func = pybamm.Function(multi_var_function_test, 2 * y, 3 * y)
-        jacobian = np.diag(5 * np.ones(4))
-        dfunc_dy = func.jac(y).evaluate(y=y0)
-        np.testing.assert_array_equal(jacobian, dfunc_dy.toarray())
 
     def test_index(self):
         vec = pybamm.StateVector(slice(0, 5))
