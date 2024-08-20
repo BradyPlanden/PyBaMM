@@ -4,7 +4,7 @@ import time
 
 
 # Create the list of input dicts
-n = 50  # Number of solves
+n = 1  # Number of solves
 inputs = [
     {
         "Current function [A]": x,
@@ -16,11 +16,13 @@ inputs = [
 # Solve with gradient:
 grad = False
 use_jax = True
+rtol = 1e-6
+atol = 1e-6
 
-# inputs = {
-#     "Current function [A]": 0.222,
-#     "Separator porosity": 0.3,
-# }
+if use_jax:
+    import jax
+
+    jax.config.update("jax_platform_name", "cpu")
 
 
 # Function to construct the conventional model and Jax model
@@ -60,7 +62,7 @@ def build_jax_model():
 
 
 # Setup
-t_eval = np.linspace(0, 3600, 7200)
+t_eval = np.linspace(0, 3600, 10)
 model = build_model()
 jax_model = build_jax_model()
 
@@ -69,20 +71,22 @@ if pybamm.have_idaklu():
     # Output variables
     output_variables = [
         "Voltage [V]",
-        # "Current [A]",
+        "Current [A]",
         "Time [s]",
     ]
 
+# Add IDAKLU if installed
+if pybamm.have_idaklu():
     # Create the IDAKLU Solver object w/o output vars
     idaklu_solver = pybamm.IDAKLUSolver(
-        rtol=1e-6,
-        atol=1e-6,
+        rtol=rtol,
+        atol=atol,
     )
 
     # Create the IDAKLU Solver object
     idaklu_solver_output_vars = pybamm.IDAKLUSolver(
-        rtol=1e-6,
-        atol=1e-6,
+        rtol=rtol,
+        atol=atol,
         output_variables=output_variables,
     )
 
@@ -101,26 +105,26 @@ if pybamm.have_idaklu():
 # Add the Casadi solvers
 casadi_solver_fast_with_events = pybamm.CasadiSolver(
     mode="fast with events",
-    rtol=1e-6,
-    atol=1e-6,
+    rtol=rtol,
+    atol=atol,
 )
 
 casadi_solver_fast = pybamm.CasadiSolver(
     mode="fast",
-    rtol=1e-6,
-    atol=1e-6,
+    rtol=rtol,
+    atol=atol,
 )
 
 casadi_solver = pybamm.CasadiSolver(
-    rtol=1e-6,
-    atol=1e-6,
+    rtol=rtol,
+    atol=atol,
 )
 
 # Add the Jax solver
 if pybamm.have_jax() and use_jax:
     jax_solver = pybamm.JaxSolver(
-        rtol=1e-6,
-        atol=1e-6,
+        rtol=rtol,
+        atol=atol,
         method="BDF",
     )
 
@@ -134,7 +138,8 @@ if pybamm.have_idaklu():
             inputs=inputs[i],
             calculate_sensitivities=grad,
         )
-        V = sim["Voltage [V]"].data
+        for k in output_variables:
+            V = sim[k].data
     print(f"Total IDAKLU time per solve: {(time.time() - start_time)}")
 
     start_time = time.time()
@@ -145,7 +150,8 @@ if pybamm.have_idaklu():
             inputs=inputs[i],
             calculate_sensitivities=grad,
         )
-        V = sim["Voltage [V]"].data
+        for k in output_variables:
+            V = sim[k].data
     print(f"Total IDAKLU w/ output vars time per solve: {(time.time() - start_time)}")
 
     if ida_jax_solver is not None:
@@ -166,7 +172,8 @@ for i in range(n):
         inputs=inputs[i],
         calculate_sensitivities=grad,
     )
-    V = sim["Voltage [V]"].data
+    for k in output_variables:
+        V = sim[k].data
 print(f"Total Casadi time per solve: {(time.time() - start_time)}")  # 0.110s
 
 start_time = time.time()
@@ -177,7 +184,8 @@ for i in range(n):
         inputs=inputs[i],
         calculate_sensitivities=grad,
     )
-    V = sim["Voltage [V]"].data
+    for k in output_variables:
+        V = sim[k].data
 print(f"Total Casadi (Fast) time per solve: {(time.time() - start_time)}")  # 0.068s
 
 start_time = time.time()
@@ -188,7 +196,8 @@ for i in range(n):
         inputs=inputs[i],
         calculate_sensitivities=grad,
     )
-    V = sim["Voltage [V]"].data
+    for k in output_variables:
+        V = sim[k].data
 print(
     f"Total Casadi (Fast with Events) time per solve: {(time.time() - start_time)}"
 )  # 0.0675
@@ -201,7 +210,8 @@ if pybamm.have_jax() and use_jax:
             t_eval,
             inputs=inputs[i],
         )
-        V = sim["Voltage [V]"].data
+        for k in output_variables:
+            V = sim[k].data
     print(f"Total Jax BDF time per solve: {(time.time() - start_time)}")
 
 
