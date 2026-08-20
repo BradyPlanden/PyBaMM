@@ -8,6 +8,9 @@ on:
   push:
     branches:
       - main
+      # TEMPORARY (do not merge): exercise the full suite on a fork branch
+      # without a PR. Push events read this file from the pushed ref.
+      - 'ci/**'
 
 
 permissions: {}
