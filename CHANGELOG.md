@@ -1,5 +1,13 @@
 # [Unreleased](https://github.com/pybamm-team/PyBaMM/)
 
+## Features
+
+- Added the Rust execution engine. ([#XXXX](https://github.com/pybamm-team/PyBaMM/pull/XXXX))
+
+## Bug fixes
+
+- Continuing a sensitivity solve across a step boundary (an `Experiment`, or repeated `step` calls) from a solve that used `output_variables` now raises a `SolverError` naming the cause, on every solver. The guard previously fired only when no sensitivities were stored at all, so IDAKLU -- which stores them at output width -- slipped through and either raised a bare `ValueError` from the observer or, on the CasADi path, silently seeded `dy0/dp` with output-width values and returned wrong gradients. ([#XXXX](https://github.com/pybamm-team/PyBaMM/pull/XXXX))
+
 # [v26.8.0.0](https://github.com/pybamm-team/PyBaMM/tree/pybamm-v26.8.0.0) - 2026-08-13
 
 ## Features
